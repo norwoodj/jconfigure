@@ -9,7 +9,7 @@ setup(
     author="John Norwood",
     author_email="norwood.john.m@gmail.com",
     url="https://github.com/norwoodj/jconfigure",
-    download_url="https://github.com/peterldowns/jconfigure/archive/17.0912-dev.tar.gz",
+    download_url="https://github.com/norwoodj/jconfigure/archive/17.0912-dev.tar.gz",
     keywords=["configuration"],
     classifiers=[],
     install_requires=[

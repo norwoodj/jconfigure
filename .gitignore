@@ -1,2 +1,6 @@
 jscripts/*.sh
 jscripts/utilities/*.sh
+.idea
+*.iml
+__pycache__
+*.pyc

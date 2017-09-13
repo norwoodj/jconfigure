@@ -3,7 +3,7 @@ import json
 
 from yaml import YAMLObject, Loader, load
 from yaml.nodes import ScalarNode, SequenceNode, MappingNode
-from .exceptions import FileParsingException
+from .exceptions import FileParsingException, UnsupportedNodeTypeException
 
 
 class ContextPassingYamlLoader(Loader):
@@ -13,12 +13,45 @@ class ContextPassingYamlLoader(Loader):
 
 
 class ArgListAcceptingYamlTag(YAMLObject):
+    supported_node_types = (ScalarNode, SequenceNode, MappingNode)
+
+    @classmethod
+    def __get_handler_for_node_type(cls, node_type):
+        handler_map = {
+            node_type: handler for node_type, handler in [
+                (ScalarNode, cls.map_scalar_node),
+                (SequenceNode, cls.map_sequence_node),
+                (MappingNode, cls.map_mapping_node),
+            ] if handler in cls.supported_node_types
+        }
+
+        return handler_map.get(node_type)
+
     @classmethod
     def __get_exception(cls, message):
         return FileParsingException("Error constructing {tag} tag. {message}".format(
             tag=cls.yaml_tag,
             message=message,
         ))
+
+    @classmethod
+    def map_scalar_node(cls, loader, node):
+        loaded_node = loader.construct_scalar(node)
+        return cls.map_node_data(loader.context, loaded_node)
+
+    @classmethod
+    def map_sequence_node(cls, loader, node):
+        loaded_node = loader.construct_sequence(node, deep=True)
+        return cls.map_node_data(loader.context, *loaded_node)
+
+    @classmethod
+    def map_mapping_node(cls, loader, node):
+        loaded_node = loader.construct_mapping(node, deep=True)
+        return cls.map_node_data(loader.context, **loaded_node)
+
+    @classmethod
+    def map_node_data(cls, context, *args, **kwargs):
+        raise NotImplementedError()
 
     @classmethod
     def handle_tag_construction_error(cls, message, exc=None):
@@ -28,20 +61,22 @@ class ArgListAcceptingYamlTag(YAMLObject):
             raise cls.__get_exception(message)
 
     @classmethod
-    def map_node_data(cls, context, *args, **kwargs):
-        raise NotImplementedError()
+    def from_yaml(cls, loader, node):
+        handler = cls.__get_handler_for_node_type(type(node))
+        if handler is None:
+            raise UnsupportedNodeTypeException(cls, type(node))
+
+        return handler(loader, node)
+
+
+class JoinFilePaths(ArgListAcceptingYamlTag):
+    yaml_tag = "!JoinFilePaths"
+    supported_node_types = (SequenceNode, MappingNode)
 
     @classmethod
-    def from_yaml(cls, loader, node):
-        if type(node) is ScalarNode:
-            loaded_node = loader.construct_scalar(node)
-            return cls.map_node_data(loader.context, loaded_node)
-        if type(node) is SequenceNode:
-            loaded_node = loader.construct_sequence(node, deep=True)
-            return cls.map_node_data(loader.context, *loaded_node)
-        if type(node) is MappingNode:
-            loaded_node = loader.construct_mapping(node, deep=True)
-            return cls.map_node_data(loader.context, **loaded_node)
+    def map_node_data(cls, context, paths=None, *args):
+        file_paths = paths or args
+        return os.path.join(*file_paths)
 
 
 class EnvVar(ArgListAcceptingYamlTag):

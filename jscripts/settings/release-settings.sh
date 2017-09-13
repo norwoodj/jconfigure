@@ -49,7 +49,7 @@ function get_next_dev_version {
 }
 
 function get_versioned_files {
-    echo "version.txt"
+    echo setup.py
 }
 
 function get_release_version_commit_message {

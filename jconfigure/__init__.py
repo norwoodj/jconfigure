@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import logging.config
 import os
 
 from .parsers import SUPPORTED_FILE_EXTENSIONS, parse_file
@@ -19,11 +20,19 @@ def __get_configuration_dirs(configuration_dirs_arg):
 
 
 def __merge_configuration_from_file(logger, base_config, filename, fail_on_parse_error):
-    base_config[filename] = parse_file(
-        logger=logger,
-        filename=filename,
-        fail_on_parse_error=fail_on_parse_error,
-    )
+    if "logging" in filename:
+        base_config.update(parse_file(
+            logger=logger,
+            filename=filename,
+            fail_on_parse_error=fail_on_parse_error,
+        ))
+
+    else:
+        base_config[filename] = parse_file(
+            logger=logger,
+            filename=filename,
+            fail_on_parse_error=fail_on_parse_error,
+        )
 
 
 def __find_available_config_files_in_directory(directory, basename):
@@ -109,17 +118,42 @@ def __handle_active_profiles_files(
     )
 
 
+def __configure_logging(
+    logger,
+    configuration_dirs,
+    logging_config_filename,
+    fail_on_parse_error,
+    fail_on_missing_files
+):
+    logging_config = {}
+
+    __handle_available_files_in_directories(
+        logger=logger,
+        base_config=logging_config,
+        file_basenames=[logging_config_filename],
+        configuration_dirs=configuration_dirs,
+        fail_on_parse_error=fail_on_parse_error,
+        fail_on_missing_files=fail_on_missing_files,
+    )
+
+    logging.config.dictConfig(logging_config)
+    logger.info("Configured logging")
+
+
 def configure(
     configuration_dirs=None,
+    logging_config_filename="logging",
     defaults_basename="defaults",
     active_profiles=None,
     fail_on_parse_error=True,
-    fail_on_missing_files=False
+    fail_on_missing_files=False,
 ):
     """
     :param configuration_dirs: The directories from which configuration files will be pulled, either a single string, or
                                a list of strings. If None is passed, defaults to a subdirectory of the cwd called
                                "config"
+    :param logging_config_filename: If provided (not None), read config files matching this base name and any supported
+                                    extension and use the read config to configure the logger
     :param defaults_basename: The name of the default config files that are read first, same as the profile, it is the
                               basename of the file to look for without an extension. Defaults to "defaults"
     :param active_profiles: The list of profiles currently active, if None is passed, this will be read from an
@@ -131,10 +165,22 @@ def configure(
 
     :return: The configuration dictionary pulled from the configuration files specified under configuration_dir
     """
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
     configuration_dirs = __get_configuration_dirs(configuration_dirs)
-    active_profiles = active_profiles or os.environ.get("JCONFIGURE_ACTIVE_PROFILES", "").split(",")
+    logger = logging.getLogger(__name__)
+
+    __configure_logging(
+        logger=logger,
+        configuration_dirs=configuration_dirs,
+        logging_config_filename=logging_config_filename,
+        fail_on_parse_error=fail_on_parse_error,
+        fail_on_missing_files=fail_on_missing_files,
+    )
+
+    active_profiles = (
+        active_profiles or
+        os.environ.get("JCONFIGURE_ACTIVE_PROFILES").split(",") if "JCONFIGURE_ACTIVE_PROFILES" in os.environ else []
+    )
+
     base_config = {}
 
     logger.info("Configuring Application using files in config directories [{}]".format(", ".join(configuration_dirs)))

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
+import json
 from jconfigure import configure
 
 
 if __name__ == "__main__":
-    print(configure(active_profiles=["LCL"], fail_on_parse_error=False))
+    print(json.dumps(configure(), indent=2))

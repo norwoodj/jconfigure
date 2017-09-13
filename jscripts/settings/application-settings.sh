@@ -36,5 +36,5 @@ function get_images_necessary_to_run_app {
 }
 
 function get_current_application_version {
-    grep "version=" setup.py | sed -E 's|version="(.*)",|\1|'
+    grep "version=" setup.py | sed -E 's|.*version="(.*)",.*|\1|'
 }

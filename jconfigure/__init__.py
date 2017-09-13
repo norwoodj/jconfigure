@@ -12,7 +12,11 @@ __LOGGER = logging.getLogger(__name__)
 
 def __get_configuration_dirs(configuration_dirs_arg):
     if configuration_dirs_arg is None:
-        return [os.path.join(os.getcwd(), "config")]
+        return (
+            os.environ.get("JCONFIGURE_CONFIG_DIRECTORIES").split(",")
+            if "JCONFIGURE_CONFIG_DIRECTORIES" in os.environ
+            else [os.path.join(os.getcwd(), "config")]
+        )
 
     elif type(configuration_dirs_arg) is basestring:
         return [configuration_dirs_arg]
@@ -140,8 +144,9 @@ def configure(
 ):
     """
     :param configuration_dirs: The directories from which configuration files will be pulled, either a single string, or
-                               a list of strings. If None is passed, defaults to a subdirectory of the cwd called
-                               "config"
+                               a list of strings. If None is passed, reads a comma seperated list of directories from
+                               an environment variable JCONFIGURE_CONFIG_DIRECTORIES, if this variable is not set
+                               defaults to a subdirectory of the current working directory called "config"
     :param logging_config_filename: If provided (not None), read config files matching this base name and any supported
                                     extension and use the read config to configure the __LOGGER
     :param defaults_basename: The name of the default config files that are read first, same as the profile, it is the

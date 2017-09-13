@@ -4,3 +4,4 @@ jscripts/utilities/*.sh
 *.iml
 __pycache__
 *.pyc
+dist

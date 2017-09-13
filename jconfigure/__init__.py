@@ -4,10 +4,10 @@ import logging.config
 import os
 
 from .parsers import SUPPORTED_FILE_EXTENSIONS, parse_file
-from .exceptions import FilesNotFoundException
+from .exceptions import FilesNotFoundException, FileParsingException
 
 __CONFIG_FILENAME_FORMAT = "{basename}{extension}"
-__LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 def __get_configuration_dirs(configuration_dirs_arg):
@@ -24,6 +24,21 @@ def __get_configuration_dirs(configuration_dirs_arg):
     return configuration_dirs_arg
 
 
+def __parse_file_handle_exceptions(filename, fail_on_parse_error):
+    try:
+        return parse_file(filename)
+    except Exception as e:
+        if fail_on_parse_error:
+            _LOGGER.error("Exception thrown while parsing file {}!".format(filename))
+            raise FileParsingException(filename) from e
+        else:
+            _LOGGER.warn("Exception thrown while parsing file {}. fail_on_parse_error is not set, continuing".format(
+                filename
+            ))
+
+            return {}
+
+
 def __merge_configuration_from_dict_root(base_config, overrides):
     for k, v in overrides.items():
         if type(v) is dict and type(base_config.get(k)) is dict:
@@ -33,7 +48,7 @@ def __merge_configuration_from_dict_root(base_config, overrides):
 
 
 def __merge_configuration_from_file(base_config, filename, fail_on_parse_error):
-    overrides = parse_file(filename, fail_on_parse_error)
+    overrides = __parse_file_handle_exceptions(filename, fail_on_parse_error)
     __merge_configuration_from_dict_root(base_config, overrides)
 
 
@@ -60,12 +75,12 @@ def __handle_available_files_in_directories(
             config_files_in_dir = __find_available_config_files_in_directory(directory, basename)
 
             if len(config_files_in_dir) == 0:
-                __LOGGER.info("No config files for basename {} found in directory {}".format(basename, directory))
+                _LOGGER.debug("No config files for basename {} found in directory {}".format(basename, directory))
             else:
                 basename_found[basename] = True
 
             for f in config_files_in_dir:
-                __LOGGER.info("Parsing file {} and merging with config".format(f))
+                _LOGGER.debug("Parsing file {} and merging with config".format(f))
                 __merge_configuration_from_file(
                     base_config=base_config,
                     filename=f,
@@ -74,7 +89,7 @@ def __handle_available_files_in_directories(
 
     for basename, found in basename_found.items():
         if fail_on_missing_files and not found:
-            __LOGGER.error("No files found for basename {} in any directory and fail_on_missing_files is set, exiting".format(basename))
+            _LOGGER.error("No files found for basename {} in any directory and fail_on_missing_files is set, exiting".format(basename))
             raise FilesNotFoundException("No files found for basename {} in any directory".format(basename))
 
 
@@ -85,8 +100,7 @@ def __handle_available_defaults_files(
     fail_on_parse_error,
     fail_on_missing_files
 ):
-    __LOGGER.info("Searching for defaults files...")
-
+    _LOGGER.debug("Searching for defaults config files...")
     __handle_available_files_in_directories(
         base_config=base_config,
         file_basenames=[defaults_basename],
@@ -103,8 +117,7 @@ def __handle_active_profiles_files(
     fail_on_parse_error,
     fail_on_missing_files
 ):
-    __LOGGER.info("Searching for active profile files...")
-
+    _LOGGER.debug("Searching for active profile config files...")
     __handle_available_files_in_directories(
         base_config=base_config,
         file_basenames=active_profiles,
@@ -121,7 +134,6 @@ def __configure_logging(
     fail_on_missing_files
 ):
     logging_config = {}
-
     __handle_available_files_in_directories(
         base_config=logging_config,
         file_basenames=[logging_config_filename],
@@ -131,7 +143,7 @@ def __configure_logging(
     )
 
     logging.config.dictConfig(logging_config)
-    __LOGGER.info("Configured logging")
+    _LOGGER.debug("Configured logging")
 
 
 def configure(
@@ -148,7 +160,7 @@ def configure(
                                an environment variable JCONFIGURE_CONFIG_DIRECTORIES, if this variable is not set
                                defaults to a subdirectory of the current working directory called "config"
     :param logging_config_filename: If provided (not None), read config files matching this base name and any supported
-                                    extension and use the read config to configure the __LOGGER
+                                    extension and use the read config to configure the _LOGGER
     :param defaults_basename: The name of the default config files that are read first, same as the profile, it is the
                               basename of the file to look for without an extension. Defaults to "defaults"
     :param active_profiles: The list of profiles currently active, if None is passed, this will be read from an
@@ -176,8 +188,8 @@ def configure(
 
     base_config = {}
 
-    __LOGGER.info("Configuring Application using files in config directories [{}]".format(", ".join(configuration_dirs)))
-    __LOGGER.info("Active profiles: [{}]".format(", ".join(active_profiles)))
+    _LOGGER.info("Configuring Application using files in config directories [{}]".format(", ".join(configuration_dirs)))
+    _LOGGER.info("Active profiles: [{}]".format(", ".join(active_profiles)))
 
     __handle_available_defaults_files(
         base_config=base_config,

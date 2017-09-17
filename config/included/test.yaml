@@ -1,0 +1,17 @@
+home:
+  john: human
+  jingles: cat
+
+active_profiles_mapping: !EnvVar
+  name: !IncludeText
+    filename: !JoinFilePaths
+      paths:
+        - /Users/jnorwood/misc/jconfigure/config/included
+        - env_var_name
+
+active_profiles_sequence: !EnvVar
+  name: !IncludeText
+    filename: !JoinFilePaths
+      - /Users/jnorwood/misc/jconfigure
+      - config/included
+      - env_var_name

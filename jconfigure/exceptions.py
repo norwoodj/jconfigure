@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+class FilesNotFoundException(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
 
 class FileParsingException(Exception):
     def __init__(self, filename):
@@ -13,10 +17,6 @@ class TagConstructionException(Exception):
             filename=filename,
             message=message,
         ))
-
-class FilesNotFoundException(Exception):
-    def __init__(self, msg):
-        super().__init__(msg)
 
 
 class UnsupportedNodeTypeException(Exception):

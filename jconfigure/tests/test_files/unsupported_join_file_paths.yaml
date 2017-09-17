@@ -1,0 +1,2 @@
+include_json_scalar: !IncludeJson
+  filename: !JoinFilePaths "includes/one.json"

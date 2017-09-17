@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import json
 
@@ -90,6 +91,7 @@ class JoinFilePaths(ArgListAcceptingYamlTag):
 
 class EnvVar(ArgListAcceptingYamlTag):
     yaml_tag = "!EnvVar"
+    supported_node_types = (ScalarNode, MappingNode)
 
     @classmethod
     def map_node_data(cls, context, name, default=None):
@@ -103,6 +105,8 @@ class EnvVar(ArgListAcceptingYamlTag):
 
 
 class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):
+    supported_node_types = (ScalarNode, MappingNode)
+
     @classmethod
     def handle_included_file(cls, context, file_handle):
         raise NotImplementedError()

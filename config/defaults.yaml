@@ -1,0 +1,5 @@
+test_json_mapping: !IncludeJson
+  filename: "included/test.json"
+
+test_yaml_mapping: !IncludeYaml
+  filename: "included/test.yaml"

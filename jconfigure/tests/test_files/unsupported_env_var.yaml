@@ -1,0 +1,2 @@
+env_var_unsupported: !EnvVar
+  - _TEST_ENV_VAR

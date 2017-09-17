@@ -3,14 +3,14 @@ import logging
 import logging.config
 import os
 
-from .parsers import SUPPORTED_FILE_EXTENSIONS, parse_file
 from .exceptions import FilesNotFoundException, FileParsingException
+from .parsers import SUPPORTED_FILE_EXTENSIONS, CONFIG_FILENAME_FORMAT
+from .utils import merge_configuration_from_dict_root, parse_file
 
-__CONFIG_FILENAME_FORMAT = "{basename}{extension}"
 _LOGGER = logging.getLogger(__name__)
 
 
-def __get_configuration_dirs(configuration_dirs_arg):
+def _get_configuration_dirs(configuration_dirs_arg):
     if configuration_dirs_arg is None:
         return (
             os.environ.get("JCONFIGURE_CONFIG_DIRECTORIES").split(",")
@@ -24,7 +24,7 @@ def __get_configuration_dirs(configuration_dirs_arg):
     return configuration_dirs_arg
 
 
-def __parse_file_handle_exceptions(filename, fail_on_parse_error):
+def _parse_file_handle_exceptions(filename, fail_on_parse_error):
     try:
         return parse_file(filename)
     except Exception as e:
@@ -39,29 +39,21 @@ def __parse_file_handle_exceptions(filename, fail_on_parse_error):
             return {}
 
 
-def __merge_configuration_from_dict_root(base_config, overrides):
-    for k, v in overrides.items():
-        if type(v) is dict and type(base_config.get(k)) is dict:
-            __merge_configuration_from_dict_root(base_config[k], v)
-        else:
-            base_config[k] = v
+def _merge_configuration_from_file(base_config, filename, fail_on_parse_error):
+    overrides = _parse_file_handle_exceptions(filename, fail_on_parse_error)
+    merge_configuration_from_dict_root(base_config, overrides)
 
 
-def __merge_configuration_from_file(base_config, filename, fail_on_parse_error):
-    overrides = __parse_file_handle_exceptions(filename, fail_on_parse_error)
-    __merge_configuration_from_dict_root(base_config, overrides)
-
-
-def __find_available_config_files_in_directory(directory, basename):
+def _find_available_config_files_in_directory(directory, basename):
     possible_config_files = (
-        os.path.join(directory, __CONFIG_FILENAME_FORMAT.format(basename=basename, extension=extension))
+        os.path.join(directory, CONFIG_FILENAME_FORMAT.format(basename=basename, extension=extension))
         for extension in SUPPORTED_FILE_EXTENSIONS
     )
 
     return [config_file for config_file in possible_config_files if os.path.isfile(config_file)]
 
 
-def __handle_available_files_in_directories(
+def _handle_available_files_in_directories(
     base_config,
     file_basenames,
     configuration_dirs,
@@ -70,9 +62,9 @@ def __handle_available_files_in_directories(
 ):
     basename_found = {b: False for b in file_basenames}
 
-    for directory in configuration_dirs:
-        for basename in file_basenames:
-            config_files_in_dir = __find_available_config_files_in_directory(directory, basename)
+    for basename in file_basenames:
+        for directory in configuration_dirs:
+            config_files_in_dir = _find_available_config_files_in_directory(directory, basename)
 
             if len(config_files_in_dir) == 0:
                 _LOGGER.debug("No config files for basename {} found in directory {}".format(basename, directory))
@@ -81,7 +73,7 @@ def __handle_available_files_in_directories(
 
             for f in config_files_in_dir:
                 _LOGGER.debug("Parsing file {} and merging with config".format(f))
-                __merge_configuration_from_file(
+                _merge_configuration_from_file(
                     base_config=base_config,
                     filename=f,
                     fail_on_parse_error=fail_on_parse_error,
@@ -93,7 +85,7 @@ def __handle_available_files_in_directories(
             raise FilesNotFoundException("No files found for basename {} in any directory".format(basename))
 
 
-def __handle_available_defaults_files(
+def _handle_available_defaults_files(
     base_config,
     defaults_basename,
     configuration_dirs,
@@ -101,7 +93,7 @@ def __handle_available_defaults_files(
     fail_on_missing_files
 ):
     _LOGGER.debug("Searching for defaults config files...")
-    __handle_available_files_in_directories(
+    _handle_available_files_in_directories(
         base_config=base_config,
         file_basenames=[defaults_basename],
         configuration_dirs=configuration_dirs,
@@ -110,7 +102,7 @@ def __handle_available_defaults_files(
     )
 
 
-def __handle_active_profiles_files(
+def _handle_active_profiles_files(
     base_config,
     active_profiles,
     configuration_dirs,
@@ -118,7 +110,7 @@ def __handle_active_profiles_files(
     fail_on_missing_files
 ):
     _LOGGER.debug("Searching for active profile config files...")
-    __handle_available_files_in_directories(
+    _handle_available_files_in_directories(
         base_config=base_config,
         file_basenames=active_profiles,
         configuration_dirs=configuration_dirs,
@@ -127,14 +119,14 @@ def __handle_active_profiles_files(
     )
 
 
-def __configure_logging(
+def _configure_logging(
     configuration_dirs,
     logging_config_filename,
     fail_on_parse_error,
     fail_on_missing_files
 ):
     logging_config = {}
-    __handle_available_files_in_directories(
+    _handle_available_files_in_directories(
         base_config=logging_config,
         file_basenames=[logging_config_filename],
         configuration_dirs=configuration_dirs,
@@ -172,9 +164,9 @@ def configure(
 
     :return: The configuration dictionary pulled from the configuration files specified under configuration_dir
     """
-    configuration_dirs = __get_configuration_dirs(configuration_dirs)
+    configuration_dirs = _get_configuration_dirs(configuration_dirs)
 
-    __configure_logging(
+    _configure_logging(
         configuration_dirs=configuration_dirs,
         logging_config_filename=logging_config_filename,
         fail_on_parse_error=fail_on_parse_error,
@@ -191,7 +183,7 @@ def configure(
     _LOGGER.info("Configuring Application using files in config directories [{}]".format(", ".join(configuration_dirs)))
     _LOGGER.info("Active profiles: [{}]".format(", ".join(active_profiles)))
 
-    __handle_available_defaults_files(
+    _handle_available_defaults_files(
         base_config=base_config,
         configuration_dirs=configuration_dirs,
         defaults_basename=defaults_basename,
@@ -199,7 +191,7 @@ def configure(
         fail_on_missing_files=fail_on_missing_files,
     )
 
-    __handle_active_profiles_files(
+    _handle_active_profiles_files(
         base_config=base_config,
         configuration_dirs=configuration_dirs,
         active_profiles=active_profiles,

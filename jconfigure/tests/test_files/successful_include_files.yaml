@@ -1,0 +1,18 @@
+include_json_scalar: !IncludeJson "includes/one.json"
+include_json_mapping: !IncludeJson
+  filename: !JoinFilePaths
+    - !EnvVar _TEST_INCLUDE_DIR
+    - one.json
+
+include_yaml_scalar: !IncludeYaml "includes/one.yaml"
+include_yaml_mapping: !IncludeYaml
+  filename: !JoinFilePaths
+    - !EnvVar _TEST_INCLUDE_DIR
+    - one.yaml
+
+include_text_scalar: !IncludeText "includes/one.txt"
+include_text_mapping: !IncludeText
+  filename: !JoinFilePaths
+    paths:
+    - !EnvVar _TEST_INCLUDE_DIR
+    - one.txt

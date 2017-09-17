@@ -1,0 +1,8 @@
+env_var_scalar: !EnvVar _TEST_ENV_VAR
+
+env_var_mapping: !EnvVar
+  name: _TEST_ENV_VAR
+
+env_var_default: !EnvVar
+  name: _NONEXISTANT_ENV_VAR
+  default: default_environment

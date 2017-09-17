@@ -1,7 +1,0 @@
-test_json_mapping:
-  home:
-    erin: cat
-
-test_yaml_mapping:
-  home:
-    - john: cat

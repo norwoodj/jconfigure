@@ -4,11 +4,7 @@ import logging
 import os
 import yaml
 
-from .exceptions import FileParsingException
 from .yaml_tags import *
-
-__LOGGER = logging.getLogger(__name__)
-
 
 class JsonConfigFileParser:
     FILE_EXTENSIONS = [".json"]
@@ -43,19 +39,7 @@ __FILE_EXTENSION_TO_PARSERS = {
 SUPPORTED_FILE_EXTENSIONS = list(__FILE_EXTENSION_TO_PARSERS.keys())
 
 
-def parse_file(filename, fail_on_parse_error=True):
+def parse_file(filename):
     _, extension = os.path.splitext(filename)
     parser = __FILE_EXTENSION_TO_PARSERS[extension]
-
-    try:
-        return parser.parse(filename)
-    except Exception as e:
-        if fail_on_parse_error:
-            __LOGGER.error("Exception thrown while parsing file {} using parser {}!".format(filename, parser))
-            raise FileParsingException(filename) from e
-        else:
-            __LOGGER.warn("Exception thrown while parsing file {} using parser {}. fail_on_parse_error is not set, continuing".format(
-                filename, parser
-            ))
-
-            return {}
+    return parser.parse(filename)

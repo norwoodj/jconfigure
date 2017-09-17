@@ -62,8 +62,8 @@ def _handle_available_files_in_directories(
 ):
     basename_found = {b: False for b in file_basenames}
 
-    for directory in configuration_dirs:
-        for basename in file_basenames:
+    for basename in file_basenames:
+        for directory in configuration_dirs:
             config_files_in_dir = _find_available_config_files_in_directory(directory, basename)
 
             if len(config_files_in_dir) == 0:

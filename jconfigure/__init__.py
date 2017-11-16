@@ -175,7 +175,7 @@ def configure(
 
     active_profiles = (
         active_profiles or
-        os.environ.get("JCONFIGURE_ACTIVE_PROFILES").split(",") if "JCONFIGURE_ACTIVE_PROFILES" in os.environ else []
+        (os.environ.get("JCONFIGURE_ACTIVE_PROFILES").split(",") if "JCONFIGURE_ACTIVE_PROFILES" in os.environ else [])
     )
 
     base_config = {}

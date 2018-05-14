@@ -8,7 +8,7 @@ source ${SCRIPT_DIR}/utilities/logging-utilities.sh
 # The name of the project these scripts are installed to. This name is used in a number of places throughout these scripts,
 # for instance in the naming of docker images. By default they are prefixed with the Project name
 ##
-readonly PROJECT_NAME="jscripts"
+readonly PROJECT_NAME="jconfigure"
 
 
 ##

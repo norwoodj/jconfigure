@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import os
+import itertools
 import json
+import os
 
 from yaml import YAMLObject, Loader, load
 from yaml.nodes import ScalarNode, SequenceNode, MappingNode
@@ -102,6 +103,20 @@ class EnvVar(ArgListAcceptingYamlTag):
             )
 
         return os.environ.get(name, default)
+
+
+class Chain(ArgListAcceptingYamlTag):
+    yaml_tag = "!Chain"
+    supported_node_types = (SequenceNode, MappingNode)
+
+    @classmethod
+    def map_node_data(cls, context, *args, **kwargs):
+        lists = kwargs.get("lists") or args
+        for l in lists:
+            if type(l) is not list:
+                raise TagConstructionException(cls.yaml_tag, context["filename"], "All elements of !Chain node must be lists")
+
+        return list(itertools.chain(*lists))
 
 
 class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):

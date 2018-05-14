@@ -85,3 +85,14 @@ class TestIncludeYaml(unittest.TestCase):
             TestIncludeYaml.parse_file,
             get_full_test_file_path("unsupported_join_file_paths.yaml"),
         )
+
+    def test_chain(self):
+        ans = TestIncludeYaml.parse_file(get_full_test_file_path("chain.yaml"))
+        self.assertEqual(ans, {"chain_sequence": [1, 2, 3, 4], "chain_mapping": [1, 2, 3, 4]})
+
+    def test_chain_not_list(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("chain_not_list.yaml"),
+        )

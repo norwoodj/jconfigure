@@ -1,0 +1,3 @@
+chain_not_list: !Chain
+  - [1, 2]
+  - Hello

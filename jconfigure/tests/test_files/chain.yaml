@@ -1,0 +1,9 @@
+chain_sequence: !Chain
+  - [1, 2]
+  - [3, 4]
+
+chain_mapping: !Chain
+  lists:
+    - [1, 2]
+    - [3, 4]
+

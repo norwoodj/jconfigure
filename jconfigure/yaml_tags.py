@@ -4,8 +4,19 @@ import json
 import os
 
 from yaml import YAMLObject, Loader, load
+from yaml.constructor import BaseConstructor
 from yaml.nodes import ScalarNode, SequenceNode, MappingNode
+
 from .exceptions import TagConstructionException, UnsupportedNodeTypeException
+
+
+# monkey patch construct_object to ensure alias expansion occurs before our custom yaml tags refer to any aliases
+def construct_object_deep(self, node, deep=True):
+    return construct_object_orig(self, node, deep)
+
+
+construct_object_orig = BaseConstructor.construct_object
+BaseConstructor.construct_object = construct_object_deep
 
 
 class ContextPassingYamlLoader(Loader):
@@ -116,7 +127,7 @@ class Chain(ArgListAcceptingYamlTag):
             if type(l) is not list:
                 raise TagConstructionException(cls.yaml_tag, context["filename"], "All elements of !Chain node must be lists")
 
-        return list(itertools.chain(*lists))
+        return list(itertools.chain.from_iterable(lists))
 
 
 class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):

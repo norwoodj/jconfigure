@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import json
 import logging
 import logging.config
 import os
@@ -58,7 +59,7 @@ def _handle_available_files_in_directories(
     file_basenames,
     configuration_dirs,
     fail_on_parse_error,
-    fail_on_missing_files
+    fail_on_missing_files,
 ):
     basename_found = {b: False for b in file_basenames}
 
@@ -90,7 +91,7 @@ def _handle_available_defaults_files(
     defaults_basename,
     configuration_dirs,
     fail_on_parse_error,
-    fail_on_missing_files
+    fail_on_missing_files,
 ):
     _LOGGER.debug("Searching for defaults config files...")
     _handle_available_files_in_directories(
@@ -107,7 +108,7 @@ def _handle_active_profiles_files(
     active_profiles,
     configuration_dirs,
     fail_on_parse_error,
-    fail_on_missing_files
+    fail_on_missing_files,
 ):
     _LOGGER.debug("Searching for active profile config files...")
     _handle_available_files_in_directories(
@@ -123,7 +124,8 @@ def _configure_logging(
     configuration_dirs,
     logging_config_filename,
     fail_on_parse_error,
-    fail_on_missing_files
+    fail_on_missing_files,
+    overrides={},
 ):
     logging_config = {}
     _handle_available_files_in_directories(
@@ -134,8 +136,9 @@ def _configure_logging(
         fail_on_missing_files=fail_on_missing_files,
     )
 
+    merge_configuration_from_dict_root(logging_config, overrides)
     logging.config.dictConfig(logging_config)
-    _LOGGER.debug("Configured logging")
+    _LOGGER.debug(f"Configured logging with config: {json.dumps(logging_config)}")
 
 
 def configure(
@@ -146,6 +149,7 @@ def configure(
     fail_on_parse_error=True,
     fail_on_missing_files=False,
     overrides={},
+    logging_overrides={},
 ):
     """
     :param configuration_dirs: The directories from which configuration files will be pulled, either a single string, or
@@ -162,6 +166,8 @@ def configure(
                             where extension is one of the allowed file types
     :param fail_on_parse_error: If False suppress any exceptions thrown while processing a file. Defaults to True
     :param fail_on_missing_files: If True, raise an exception if an expected file is not found. Defaults to False
+    :param overrides: If provided, will be deep merged with the configuration directory constructed
+    :param logging_overrides: If provided, will be deep merged with the logging configuration before logging is configured
 
     :return: The configuration dictionary pulled from the configuration files specified under configuration_dir
     """
@@ -172,6 +178,7 @@ def configure(
         logging_config_filename=logging_config_filename,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        overrides=logging_overrides,
     )
 
     active_profiles = (
@@ -200,5 +207,6 @@ def configure(
         fail_on_missing_files=fail_on_missing_files,
     )
 
-    base_config.update(overrides)
+    merge_configuration_from_dict_root(base_config, overrides)
+    _LOGGER.debug(f"Constructed config: {json.dumps(base_config)}")
     return base_config

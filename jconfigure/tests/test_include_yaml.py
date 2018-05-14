@@ -88,7 +88,11 @@ class TestIncludeYaml(unittest.TestCase):
 
     def test_chain(self):
         ans = TestIncludeYaml.parse_file(get_full_test_file_path("chain.yaml"))
-        self.assertEqual(ans, {"chain_sequence": [1, 2, 3, 4], "chain_mapping": [1, 2, 3, 4]})
+        self.assertEqual(ans, {
+            "chain_sequence": [1, 2, 3, 4],
+            "chain_mapping": [1, 2, 3, 4],
+            "chain_mappings": [{"one": 1}, {"two": 2}, {"three": 3}, {"four": 4}],
+        })
 
     def test_chain_not_list(self):
         self.assertRaises(

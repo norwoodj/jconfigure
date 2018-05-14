@@ -180,3 +180,18 @@ join_file_paths_mapping: !IncludeYaml
       - !EnvVar SECRETS_DIR_PATH
       - database-secrets.yaml
 ```
+
+### !Chain
+This command takes a list of lists and chains them together into a single list
+
+Usage:
+```
+chain_sequence: !Chain
+  - [1, 2]
+  - [3, 4, 5]
+
+chain_mapping: !Chain
+  lists:
+    - [1, 2]
+    - [3, 4, 5]
+```

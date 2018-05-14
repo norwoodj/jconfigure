@@ -11,9 +11,11 @@ def merge_configuration_from_dict_root(base_config, overrides):
         else:
             base_config[k] = v
 
+
 def get_parser_for_file(filename):
     _, extension = os.path.splitext(filename)
     return FILE_EXTENSION_TO_PARSERS[extension]
+
 
 def parse_file(filename):
     if not os.path.isfile(filename):

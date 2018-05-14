@@ -145,6 +145,7 @@ def configure(
     active_profiles=None,
     fail_on_parse_error=True,
     fail_on_missing_files=False,
+    overrides={},
 ):
     """
     :param configuration_dirs: The directories from which configuration files will be pulled, either a single string, or
@@ -199,4 +200,5 @@ def configure(
         fail_on_missing_files=fail_on_missing_files,
     )
 
+    base_config.update(overrides)
     return base_config

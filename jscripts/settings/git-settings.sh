@@ -34,5 +34,5 @@ function get_remote_to_pull_from {
 }
 
 function get_remotes_to_push_to {
-    echo "origin rpi"
+    echo "origin"
 }

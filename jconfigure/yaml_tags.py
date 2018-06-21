@@ -95,10 +95,25 @@ class JoinFilePaths(ArgListAcceptingYamlTag):
         if len(file_paths) == 0:
             cls.handle_tag_construction_error(
                 message="No paths provided, provide them either with a 'paths' mapping, or a list of paths",
-                filename=context["filename"],
+                filename=context["_parsing_filename"],
             )
 
         return os.path.join(*file_paths)
+
+
+class ContextValue(ArgListAcceptingYamlTag):
+    yaml_tag = "!ContextValue"
+    supported_node_types = (ScalarNode, MappingNode)
+
+    @classmethod
+    def map_node_data(cls, context, key, default=None):
+        if key not in context and default is None:
+            cls.handle_tag_construction_error(
+                message="Context Key '{}' not set, and no default provided!".format(key),
+                filename=context["_parsing_filename"],
+            )
+
+        return context.get(key, default)
 
 
 class EnvVar(ArgListAcceptingYamlTag):
@@ -110,7 +125,7 @@ class EnvVar(ArgListAcceptingYamlTag):
         if name not in os.environ and default is None:
             cls.handle_tag_construction_error(
                 message="Environment Variable '{}' not set, and no default provided!".format(name),
-                filename=context["filename"],
+                filename=context["_parsing_filename"],
             )
 
         return os.environ.get(name, default)
@@ -125,7 +140,7 @@ class Chain(ArgListAcceptingYamlTag):
         lists = kwargs.get("lists") or args
         for l in lists:
             if type(l) is not list:
-                raise TagConstructionException(cls.yaml_tag, context["filename"], "All elements of !Chain node must be lists")
+                raise TagConstructionException(cls.yaml_tag, context["_parsing_filename"], "All elements of !Chain node must be lists")
 
         return list(itertools.chain.from_iterable(lists))
 
@@ -139,7 +154,7 @@ class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):
 
     @classmethod
     def map_node_data(cls, context, filename):
-        current_file_directory = os.path.dirname(context["filename"])
+        current_file_directory = os.path.dirname(context["_parsing_filename"])
         full_file_path = os.path.join(current_file_directory, filename)
 
         try:
@@ -149,7 +164,7 @@ class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):
         except IOError as e:
             cls.handle_tag_construction_error(
                 message="Attempted to include relative file {}, which doesn't exist!".format(filename),
-                filename=context["filename"],
+                filename=context["_parsing_filename"],
                 exc=e,
             )
 
@@ -165,7 +180,7 @@ class IncludeJson(RelativeFileIncludingYamlTag):
 
             cls.handle_tag_construction_error(
                 message="Failed to parse relative json file {}!".format(file_handle.name),
-                filename=context["filename"],
+                filename=context["_parsing_filename"],
                 exc=e,
             )
 
@@ -176,7 +191,8 @@ class IncludeYaml(RelativeFileIncludingYamlTag):
     @classmethod
     def handle_included_file(cls, context, file_handle):
         try:
-            context_passing_loader = lambda stream: ContextPassingYamlLoader(stream, {"filename": file_handle.name})
+            full_context = {**context, "_parsing_filename": file_handle.name}
+            context_passing_loader = lambda stream: ContextPassingYamlLoader(stream, full_context)
             return load(file_handle, Loader=context_passing_loader)
         except ValueError as e:
             cls.handle_tag_construction_error(

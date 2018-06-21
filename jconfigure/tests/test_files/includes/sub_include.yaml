@@ -1,0 +1,2 @@
+- cat: !IncludeText sub_include/two.txt
+- !IncludeYaml sub_include/two.yaml

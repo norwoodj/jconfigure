@@ -1,0 +1,4 @@
+pets:
+  - cat_scalar: !ContextValue cat
+  - cat_mapping: !ContextValue {key: cat}
+  - dog: !ContextValue {key: dog, default: oscar}

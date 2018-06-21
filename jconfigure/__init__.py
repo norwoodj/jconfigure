@@ -25,9 +25,9 @@ def _get_configuration_dirs(configuration_dirs_arg):
     return configuration_dirs_arg
 
 
-def _parse_file_handle_exceptions(filename, fail_on_parse_error):
+def _parse_file_handle_exceptions(filename, fail_on_parse_error, context):
     try:
-        return parse_file(filename)
+        return parse_file(filename, context)
     except Exception as e:
         if fail_on_parse_error:
             _LOGGER.error("Exception thrown while parsing file {}!".format(filename))
@@ -40,8 +40,8 @@ def _parse_file_handle_exceptions(filename, fail_on_parse_error):
             return {}
 
 
-def _merge_configuration_from_file(base_config, filename, fail_on_parse_error):
-    overrides = _parse_file_handle_exceptions(filename, fail_on_parse_error)
+def _merge_configuration_from_file(base_config, filename, fail_on_parse_error, context):
+    overrides = _parse_file_handle_exceptions(filename, fail_on_parse_error, context)
     merge_configuration_from_dict_root(base_config, overrides)
 
 
@@ -60,6 +60,7 @@ def _handle_available_files_in_directories(
     configuration_dirs,
     fail_on_parse_error,
     fail_on_missing_files,
+    context,
 ):
     basename_found = {b: False for b in file_basenames}
 
@@ -78,6 +79,7 @@ def _handle_available_files_in_directories(
                     base_config=base_config,
                     filename=f,
                     fail_on_parse_error=fail_on_parse_error,
+                    context=context,
                 )
 
     for basename, found in basename_found.items():
@@ -92,6 +94,7 @@ def _handle_available_defaults_files(
     configuration_dirs,
     fail_on_parse_error,
     fail_on_missing_files,
+    context,
 ):
     _LOGGER.debug("Searching for defaults config files...")
     _handle_available_files_in_directories(
@@ -100,6 +103,7 @@ def _handle_available_defaults_files(
         configuration_dirs=configuration_dirs,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        context=context,
     )
 
 
@@ -109,6 +113,7 @@ def _handle_active_profiles_files(
     configuration_dirs,
     fail_on_parse_error,
     fail_on_missing_files,
+    context,
 ):
     _LOGGER.debug("Searching for active profile config files...")
     _handle_available_files_in_directories(
@@ -117,6 +122,7 @@ def _handle_active_profiles_files(
         configuration_dirs=configuration_dirs,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        context=context,
     )
 
 
@@ -125,7 +131,7 @@ def _configure_logging(
     logging_config_filename,
     fail_on_parse_error,
     fail_on_missing_files,
-    overrides={},
+    context,
 ):
     logging_config = {}
     _handle_available_files_in_directories(
@@ -134,9 +140,9 @@ def _configure_logging(
         configuration_dirs=configuration_dirs,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        context=context,
     )
 
-    merge_configuration_from_dict_root(logging_config, overrides)
     logging.config.dictConfig(logging_config)
     _LOGGER.debug(f"Configured logging with config: {json.dumps(logging_config)}")
 
@@ -148,8 +154,7 @@ def configure(
     active_profiles=None,
     fail_on_parse_error=True,
     fail_on_missing_files=False,
-    overrides={},
-    logging_overrides={},
+    context={},
 ):
     """
     :param configuration_dirs: The directories from which configuration files will be pulled, either a single string, or
@@ -166,8 +171,7 @@ def configure(
                             where extension is one of the allowed file types
     :param fail_on_parse_error: If False suppress any exceptions thrown while processing a file. Defaults to True
     :param fail_on_missing_files: If True, raise an exception if an expected file is not found. Defaults to False
-    :param overrides: If provided, will be deep merged with the configuration directory constructed
-    :param logging_overrides: If provided, will be deep merged with the logging configuration before logging is configured
+    :param context: Allows the caller to provide a dictionary context which custom tags can read values from when parsing
 
     :return: The configuration dictionary pulled from the configuration files specified under configuration_dir
     """
@@ -178,7 +182,7 @@ def configure(
         logging_config_filename=logging_config_filename,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
-        overrides=logging_overrides,
+        context=context,
     )
 
     active_profiles = (
@@ -197,6 +201,7 @@ def configure(
         defaults_basename=defaults_basename,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        context=context,
     )
 
     _handle_active_profiles_files(
@@ -205,8 +210,8 @@ def configure(
         active_profiles=active_profiles,
         fail_on_parse_error=fail_on_parse_error,
         fail_on_missing_files=fail_on_missing_files,
+        context=context,
     )
 
-    merge_configuration_from_dict_root(base_config, overrides)
     _LOGGER.debug(f"Constructed config: {json.dumps(base_config)}")
     return base_config

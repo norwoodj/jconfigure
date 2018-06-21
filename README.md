@@ -112,6 +112,22 @@ including it you can use:
 include_json_file: !IncludeJson otherfile.json
 ```
 
+### !ContextValue
+This returns the value associated with the provided key supplied in the _context_ argument to `configure`. It allows
+for a default value to be passed in the case that the context key isn't set. If the default
+is not provided and there is no such key provided in the context, will throw an exception.
+
+Usage:
+```
+context_scalar: !ContextValue cli_log_level
+context_mapping: !ContextValue
+  key: cli_log_level
+
+context_default: !ContextValue
+  key: cli_log_level
+  default: INFO
+```
+
 ### !EnvVar
 This returns the string value of the passed environment variable name, the mapping form of this allows
 for a default value to be passed in the case that the environment variable isn't set. If the default
@@ -123,7 +139,7 @@ env_var_scalar: !EnvVar DATABASE_PASSWORD
 env_var_mapping: !EnvVar
   name: DATABASE_PASSWORD
 
-env_var_scalar: !EnvVar
+env_var_default: !EnvVar
   name: DATABASE_MASTER_PASSWORD
   default: null
 ```

@@ -1,0 +1,7 @@
+cat: !ContextValue
+  key: !IncludeText context_cat_key.txt
+  default: jingles
+
+dog: !ContextValue
+  key: !IncludeText context_dog_key.txt
+  default: oscar

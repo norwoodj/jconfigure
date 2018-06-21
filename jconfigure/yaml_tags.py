@@ -101,6 +101,21 @@ class JoinFilePaths(ArgListAcceptingYamlTag):
         return os.path.join(*file_paths)
 
 
+class ContextValue(ArgListAcceptingYamlTag):
+    yaml_tag = "!ContextValue"
+    supported_node_types = (ScalarNode, MappingNode)
+
+    @classmethod
+    def map_node_data(cls, context, key, default=None):
+        if key not in context and default is None:
+            cls.handle_tag_construction_error(
+                message="Context Key '{}' not set, and no default provided!".format(key),
+                filename=context["_parsing_filename"],
+            )
+
+        return context.get(key, default)
+
+
 class EnvVar(ArgListAcceptingYamlTag):
     yaml_tag = "!EnvVar"
     supported_node_types = (ScalarNode, MappingNode)

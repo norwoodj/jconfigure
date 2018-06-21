@@ -116,3 +116,30 @@ class TestIncludeYaml(unittest.TestCase):
             TestIncludeYaml.parse_file,
             get_full_test_file_path("unsuccessful_multi_level_include_files.yaml"),
         )
+
+    def test_context_successful(self):
+        ans = TestIncludeYaml.parse_file(get_full_test_file_path("context_successful.yaml"), {"cat": "echo"})
+        self.assertEqual(ans, {
+            "pets": [
+                {"cat_scalar": "echo"},
+                {"cat_mapping": "echo"},
+                {"dog": "oscar"},
+            ],
+        })
+
+    def test_context_include(self):
+        ans = TestIncludeYaml.parse_file(get_full_test_file_path("context_include.yaml"), {"cat": "echo"})
+        self.assertEqual(ans, {
+            "pets": {
+                "cat": "echo",
+                "dog": "oscar",
+            },
+        })
+
+    def test_context_missing(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("context_missing.yaml"),
+            {"cat": "echo"},
+        )

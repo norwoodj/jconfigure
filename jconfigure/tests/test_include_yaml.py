@@ -10,9 +10,9 @@ from .test_utils import get_full_test_file_path
 
 class TestIncludeYaml(unittest.TestCase):
     @staticmethod
-    def parse_file(filename):
+    def parse_file(filename, context={}):
         parser = get_parser_for_file(filename)
-        return parser.parse(filename)
+        return parser.parse(filename, context)
 
     def test_parse_working_yaml(self):
         self.assertEqual(
@@ -99,4 +99,20 @@ class TestIncludeYaml(unittest.TestCase):
             TagConstructionException,
             TestIncludeYaml.parse_file,
             get_full_test_file_path("chain_not_list.yaml"),
+        )
+
+    def test_sub_include_successful(self):
+        ans = TestIncludeYaml.parse_file(get_full_test_file_path("successful_multi_level_include_files.yaml"))
+        self.assertEqual(ans, {
+            "pets": [
+                {"cat": "echo"},
+                {"dog": "oscar"},
+             ],
+        })
+
+    def test_sub_include_missing(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_multi_level_include_files.yaml"),
         )

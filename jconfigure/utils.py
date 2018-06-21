@@ -17,13 +17,13 @@ def get_parser_for_file(filename):
     return FILE_EXTENSION_TO_PARSERS[extension]
 
 
-def parse_file(filename):
+def parse_file(filename, context):
     if not os.path.isfile(filename):
         raise FilesNotFoundException(f"File {filename} doesn't exist!")
 
     parser = get_parser_for_file(filename)
 
     try:
-        return parser.parse(filename)
+        return parser.parse(filename, context)
     except Exception as e:
         raise FileParsingException(filename) from e

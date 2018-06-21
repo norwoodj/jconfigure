@@ -10,7 +10,7 @@ class JsonConfigFileParser:
     FILE_EXTENSIONS = [".json"]
 
     @staticmethod
-    def parse(filename):
+    def parse(filename, _):
         with open(filename) as json_file:
             return json.load(json_file)
 
@@ -19,11 +19,11 @@ class YamlConfigFileParser:
     FILE_EXTENSIONS = [".yaml", ".yml"]
 
     @staticmethod
-    def parse(filename):
+    def parse(filename, context):
         with open(filename) as yaml_file:
             return yaml.load(
                 yaml_file,
-                Loader=lambda stream: ContextPassingYamlLoader(stream, {"filename": filename})
+                Loader=lambda stream: ContextPassingYamlLoader(stream, {**context, "_parsing_filename": filename}),
             )
 
 

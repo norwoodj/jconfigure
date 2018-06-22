@@ -131,6 +131,42 @@ class EnvVar(ArgListAcceptingYamlTag):
         return os.environ.get(name, default)
 
 
+class StringFormat(ArgListAcceptingYamlTag):
+    yaml_tag = "!StringFormat"
+    supported_node_types = (SequenceNode, MappingNode)
+
+    @classmethod
+    def map_node_data(cls, context, *args, **kwargs):
+        if "string" not in kwargs and len(args) < 1:
+            cls.handle_tag_construction_error(
+                message="Either a list of at least 1 string, or a dictionary containing keys 'string' and 'format_args' must be provided",
+                filename=context["_parsing_filename"],
+            )
+
+        string = kwargs.get("string") or args[0]
+
+        if type(string) is not str:
+            string_arg_type = "'string' keyword argument" if "string" in kwargs else "First list argument"
+            cls.handle_tag_construction_error(
+                message="{string_arg_type} must be a string!".format(string_arg_type=string_arg_type),
+                filename=context["_parsing_filename"],
+            )
+
+        if "format_args" not in kwargs and len(args) < 2:
+            return string
+
+        format_args = kwargs.get("format_args") or args[1]
+
+        if type(format_args) not in (dict, list):
+            format_arg_type = "'format_args' keyword argument" if "format_args" in kwargs else  "Second list argument"
+            cls.handle_tag_construction_error(
+                message="{format_arg_type} must be a dictionary or a list!".format(format_arg_type=format_arg_type),
+                filename=context["_parsing_filename"],
+            )
+
+        return string.format(**format_args) if type(format_args) is dict else string.format(*format_args)
+
+
 class Chain(ArgListAcceptingYamlTag):
     yaml_tag = "!Chain"
     supported_node_types = (SequenceNode, MappingNode)
@@ -140,7 +176,10 @@ class Chain(ArgListAcceptingYamlTag):
         lists = kwargs.get("lists") or args
         for l in lists:
             if type(l) is not list:
-                raise TagConstructionException(cls.yaml_tag, context["_parsing_filename"], "All elements of !Chain node must be lists")
+                cls.handle_tag_construction_error(
+                    message="All elements of !Chain node must be lists",
+                    filename=context["_parsing_filename"],
+                )
 
         return list(itertools.chain.from_iterable(lists))
 
@@ -197,7 +236,7 @@ class IncludeYaml(RelativeFileIncludingYamlTag):
         except ValueError as e:
             cls.handle_tag_construction_error(
                 message="Failed to parse relative yaml file {}!".format(file_handle.name),
-                filename=context["filename"],
+                filename=context["_parsing_filename"],
                 exc=e,
             )
 

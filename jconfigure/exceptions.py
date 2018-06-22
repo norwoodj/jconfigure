@@ -18,6 +18,8 @@ class TagConstructionException(Exception):
             message=message,
         ))
 
+        self.reason = message
+
 
 class UnsupportedNodeTypeException(Exception):
     def __init__(self, tag_parser_type, node_type):

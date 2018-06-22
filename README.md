@@ -144,6 +144,46 @@ env_var_default: !EnvVar
   default: null
 ```
 
+### !StringFormat
+This command takes a list or mapping specifying a format string and arguments for formatting and
+returns the formatted string:
+
+Usage:
+```
+format_sequence_one: !StringFormat
+  - echo is a {}
+  - [cat]
+
+format_sequence_two: !StringFormat
+  - echo is a {} and oscar is a {}
+  - [cat, dog]
+
+format_sequence_two_kw: !StringFormat
+  - echo is a {animal_one} and oscar is a {animal_two}
+  - animal_one: cat
+    animal_two: dog
+
+format_mapping_one: !StringFormat
+  string: echo is a {}
+  format_args: [cat]
+
+format_mapping_two: !StringFormat
+  string: echo is a {} and oscar is a {}
+  format_args: [cat, dog]
+
+format_mapping_two_kw: !StringFormat
+  string: echo is a {animal_one} and oscar is a {animal_two}
+  format_args:
+    animal_one: cat
+    animal_two: dog
+
+# If no format args are provided in the sequence or mapping form, simply returns the string
+format_sequence_null_case: !StringFormat
+  - echo is a cat
+
+format_mapping_null_case: !StringFormat
+  string: echo is a cat
+```
 
 ### !IncludeJson
 This parses a relative json file and returns the parsed dictionary
@@ -164,7 +204,6 @@ include_json_scalar: !IncludeText /var/lib/secrets/database-password
 include_json_mapping: !IncludeText
   filename: /var/lib/secrets/database-password
 ```
-
 
 ### !IncludeYaml
 This parses a relative yaml file and returns the parsed dictionary, the yaml file that

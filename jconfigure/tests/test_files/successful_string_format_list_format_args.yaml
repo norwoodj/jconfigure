@@ -1,0 +1,29 @@
+string_sequence_none: !StringFormat
+  - echo is a cat
+
+string_sequence_single: !StringFormat
+  - echo is a {}
+  - [cat]
+
+string_sequence_multi: !StringFormat
+  - echo is a {} and oscar is a {}
+  - [cat, dog]
+
+string_sequence_extra: !StringFormat
+  - echo is a {} and oscar is a {}
+  - [cat, dog, bird]
+
+string_mapping_none: !StringFormat
+  string: echo is a cat
+
+string_mapping_single: !StringFormat
+  string: echo is a {}
+  format_args: [cat]
+
+string_mapping_multi: !StringFormat
+  string: echo is a {} and oscar is a {}
+  format_args: [cat, dog]
+
+string_mapping_extra: !StringFormat
+  string: echo is a {} and oscar is a {}
+  format_args: [cat, dog, bird]

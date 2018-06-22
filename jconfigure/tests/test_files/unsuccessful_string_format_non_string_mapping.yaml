@@ -1,0 +1,2 @@
+string_sequence_number: !StringFormat
+  string: 3

@@ -1,0 +1,38 @@
+string_sequence_none: !StringFormat
+  - echo is a cat
+
+string_sequence_single: !StringFormat
+  - echo is a {animal}
+  - animal: cat
+
+string_sequence_multi: !StringFormat
+  - echo is a {animal_one} and oscar is a {animal_two}
+  - animal_one: cat
+    animal_two: dog
+
+string_sequence_extra: !StringFormat
+  - echo is a {animal_one} and oscar is a {animal_two}
+  - animal_one: cat
+    animal_two: dog
+    animal_three: bird
+
+string_mapping_none: !StringFormat
+  string: echo is a cat
+
+string_mapping_single: !StringFormat
+  string: echo is a {animal}
+  format_args:
+    animal: cat
+
+string_mapping_multi: !StringFormat
+  string: echo is a {animal_one} and oscar is a {animal_two}
+  format_args:
+    animal_one: cat
+    animal_two: dog
+
+string_mapping_extra: !StringFormat
+  string: echo is a {animal_one} and oscar is a {animal_two}
+  format_args:
+    animal_one: cat
+    animal_two: dog
+    animal_three: bird

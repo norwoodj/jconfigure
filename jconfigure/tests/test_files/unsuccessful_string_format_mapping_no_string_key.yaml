@@ -1,0 +1,3 @@
+string: !StringFormat
+  string_input: echo is a {}
+  format_args: [cat]

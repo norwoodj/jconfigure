@@ -52,9 +52,9 @@ class TestIncludeYaml(unittest.TestCase):
             "oscar": ["dog", "sleepy"],
         }
 
-        ans = TestIncludeYaml.parse_file(get_full_test_file_path("successful_include_files.yaml"))
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("successful_include_files.yaml"))
         self.assertEqual(
-            ans,
+            actual,
             {
                 "include_json_scalar": expected_include,
                 "include_json_mapping": expected_include,
@@ -87,8 +87,8 @@ class TestIncludeYaml(unittest.TestCase):
         )
 
     def test_chain(self):
-        ans = TestIncludeYaml.parse_file(get_full_test_file_path("chain.yaml"))
-        self.assertEqual(ans, {
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("chain.yaml"))
+        self.assertEqual(actual, {
             "chain_sequence": [1, 2, 3, 4],
             "chain_mapping": [1, 2, 3, 4],
             "chain_mappings": [{"one": 1}, {"two": 2}, {"three": 3}, {"four": 4}],
@@ -102,8 +102,8 @@ class TestIncludeYaml(unittest.TestCase):
         )
 
     def test_sub_include_successful(self):
-        ans = TestIncludeYaml.parse_file(get_full_test_file_path("successful_multi_level_include_files.yaml"))
-        self.assertEqual(ans, {
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("successful_multi_level_include_files.yaml"))
+        self.assertEqual(actual, {
             "pets": [
                 {"cat": "echo"},
                 {"dog": "oscar"},
@@ -118,8 +118,8 @@ class TestIncludeYaml(unittest.TestCase):
         )
 
     def test_context_successful(self):
-        ans = TestIncludeYaml.parse_file(get_full_test_file_path("context_successful.yaml"), {"cat": "echo"})
-        self.assertEqual(ans, {
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("context_successful.yaml"), {"cat": "echo"})
+        self.assertEqual(actual, {
             "pets": [
                 {"cat_scalar": "echo"},
                 {"cat_mapping": "echo"},
@@ -128,8 +128,8 @@ class TestIncludeYaml(unittest.TestCase):
         })
 
     def test_context_include(self):
-        ans = TestIncludeYaml.parse_file(get_full_test_file_path("context_include.yaml"), {"cat": "echo"})
-        self.assertEqual(ans, {
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("context_include.yaml"), {"cat": "echo"})
+        self.assertEqual(actual, {
             "pets": {
                 "cat": "echo",
                 "dog": "oscar",
@@ -143,3 +143,114 @@ class TestIncludeYaml(unittest.TestCase):
             get_full_test_file_path("context_missing.yaml"),
             {"cat": "echo"},
         )
+
+    def __check_string_format_output(self, actual):
+        self.assertEqual(actual, {
+            "string_sequence_none": "echo is a cat",
+            "string_sequence_single": "echo is a cat",
+            "string_sequence_multi": "echo is a cat and oscar is a dog",
+            "string_sequence_extra": "echo is a cat and oscar is a dog",
+            "string_mapping_none": "echo is a cat",
+            "string_mapping_single": "echo is a cat",
+            "string_mapping_multi": "echo is a cat and oscar is a dog",
+            "string_mapping_extra": "echo is a cat and oscar is a dog",
+        })
+
+    def test_string_format_fails_scalar(self):
+        self.assertRaises(
+            UnsupportedNodeTypeException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_scalar.yaml"),
+        )
+
+    def test_string_format_list_format_args(self):
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("successful_string_format_list_format_args.yaml"))
+        self.__check_string_format_output(actual)
+
+    def test_string_format_mapping_format_args(self):
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("successful_string_format_mapping_format_args.yaml"))
+        self.__check_string_format_output(actual)
+
+    def test_string_format_fails_non_string_sequence(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_non_string_sequence.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_non_string_sequence.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(e.reason, "First list argument must be a string!")
+
+    def test_string_format_fails_non_string_mapping(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_non_string_mapping.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_non_string_mapping.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(e.reason, "'string' keyword argument must be a string!")
+
+    def test_string_format_fails_mapping_no_string_key(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_mapping_no_string_key.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_mapping_no_string_key.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "Either a list of at least 1 string, or a dictionary containing keys 'string' and 'format_args' must be provided",
+            )
+
+    def test_string_format_fails_empty_list(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_empty_list.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_empty_list.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "Either a list of at least 1 string, or a dictionary containing keys 'string' and 'format_args' must be provided",
+            )
+
+    def test_string_format_fails_bad_second_arg_sequence(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_bad_second_arg_sequence.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_bad_second_arg_sequence.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "Second list argument must be a dictionary or a list!",
+            )
+
+    def test_string_format_fails_bad_second_arg_mapping(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("unsuccessful_string_format_bad_second_arg_mapping.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("unsuccessful_string_format_bad_second_arg_mapping.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "'format_args' keyword argument must be a dictionary or a list!",
+            )

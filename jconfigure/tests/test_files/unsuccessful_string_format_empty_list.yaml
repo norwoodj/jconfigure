@@ -1,0 +1,1 @@
+string_empty_list: !StringFormat []

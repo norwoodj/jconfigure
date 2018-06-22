@@ -1,0 +1,3 @@
+string_bad_second: !StringFormat
+  - echo is a {}
+  - cat

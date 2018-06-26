@@ -2,8 +2,9 @@
 import itertools
 import json
 import os
+import yaml
 
-from yaml import YAMLObject, Loader, load
+from yaml import YAMLObject, Loader
 from yaml.constructor import BaseConstructor
 from yaml.nodes import ScalarNode, SequenceNode, MappingNode
 
@@ -26,7 +27,7 @@ class ContextPassingYamlLoader(Loader):
 
 
 class ArgListAcceptingYamlTag(YAMLObject):
-    supported_node_types = (ScalarNode, SequenceNode, MappingNode)
+    supported_node_types = ScalarNode, SequenceNode, MappingNode
 
     @classmethod
     def __get_handler_for_node_type(cls, parsing_node_type):
@@ -86,7 +87,7 @@ class ArgListAcceptingYamlTag(YAMLObject):
 
 class JoinFilePaths(ArgListAcceptingYamlTag):
     yaml_tag = "!JoinFilePaths"
-    supported_node_types = (SequenceNode, MappingNode)
+    supported_node_types = SequenceNode, MappingNode
 
     @classmethod
     def map_node_data(cls, context, *args, **kwargs):
@@ -103,7 +104,7 @@ class JoinFilePaths(ArgListAcceptingYamlTag):
 
 class ContextValue(ArgListAcceptingYamlTag):
     yaml_tag = "!ContextValue"
-    supported_node_types = (ScalarNode, MappingNode)
+    supported_node_types = ScalarNode, MappingNode
 
     @classmethod
     def map_node_data(cls, context, key, default=None):
@@ -118,7 +119,7 @@ class ContextValue(ArgListAcceptingYamlTag):
 
 class EnvVar(ArgListAcceptingYamlTag):
     yaml_tag = "!EnvVar"
-    supported_node_types = (ScalarNode, MappingNode)
+    supported_node_types = ScalarNode, MappingNode
 
     @classmethod
     def map_node_data(cls, context, name, default=None):
@@ -133,7 +134,7 @@ class EnvVar(ArgListAcceptingYamlTag):
 
 class StringFormat(ArgListAcceptingYamlTag):
     yaml_tag = "!StringFormat"
-    supported_node_types = (SequenceNode, MappingNode)
+    supported_node_types = SequenceNode, MappingNode
 
     @classmethod
     def map_node_data(cls, context, *args, **kwargs):
@@ -169,7 +170,7 @@ class StringFormat(ArgListAcceptingYamlTag):
 
 class Chain(ArgListAcceptingYamlTag):
     yaml_tag = "!Chain"
-    supported_node_types = (SequenceNode, MappingNode)
+    supported_node_types = SequenceNode, MappingNode
 
     @classmethod
     def map_node_data(cls, context, *args, **kwargs):
@@ -185,7 +186,7 @@ class Chain(ArgListAcceptingYamlTag):
 
 
 class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):
-    supported_node_types = (ScalarNode, MappingNode)
+    supported_node_types = ScalarNode, MappingNode
 
     @classmethod
     def handle_included_file(cls, context, file_handle):
@@ -206,6 +207,24 @@ class RelativeFileIncludingYamlTag(ArgListAcceptingYamlTag):
                 filename=context["_parsing_filename"],
                 exc=e,
             )
+
+
+class JsonString(ArgListAcceptingYamlTag):
+    yaml_tag = "!JsonString"
+    supported_node_types = MappingNode,
+
+    @classmethod
+    def map_node_data(cls, context, object):
+        return json.dumps(object, indent=4, sort_keys=True)
+
+
+class YamlString(ArgListAcceptingYamlTag):
+    yaml_tag = "!YamlString"
+    supported_node_types = MappingNode,
+
+    @classmethod
+    def map_node_data(cls, context, object):
+        return yaml.dump(object)
 
 
 class IncludeJson(RelativeFileIncludingYamlTag):
@@ -232,7 +251,7 @@ class IncludeYaml(RelativeFileIncludingYamlTag):
         try:
             full_context = {**context, "_parsing_filename": file_handle.name}
             context_passing_loader = lambda stream: ContextPassingYamlLoader(stream, full_context)
-            return load(file_handle, Loader=context_passing_loader)
+            return yaml.load(file_handle, Loader=context_passing_loader)
         except ValueError as e:
             cls.handle_tag_construction_error(
                 message="Failed to parse relative yaml file {}!".format(file_handle.name),

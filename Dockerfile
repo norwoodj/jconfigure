@@ -6,6 +6,7 @@ WORKDIR ${APP_DIR}
 
 COPY setup.py .
 COPY jconfigure ./jconfigure/
-RUN pip install .
+RUN pip install "python-dateutil==2.7.3" \
+    && pip install .
 
 ENTRYPOINT ["python", "-m", "unittest", "discover"]

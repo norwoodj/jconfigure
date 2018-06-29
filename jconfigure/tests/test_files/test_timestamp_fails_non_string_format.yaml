@@ -1,0 +1,3 @@
+day_mapping_format: !Timestamp
+  time: 2018-06-23
+  format: 23

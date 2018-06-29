@@ -250,3 +250,31 @@ chain_mapping: !Chain
     - [1, 2]
     - [3, 4, 5]
 ```
+
+### !Timestamp
+This command takes an optional date/datetime and format and produces a timestamp in the format.
+If the format is not supplied, ISO format is used, and if the timestamp is not provided, utcnow
+is used.
+
+Usage:
+```
+utc_now_iso: !Timestamp
+  format:
+
+utc_now_condensed: !Timestamp
+  format: "%y%m%d%H%M%S"
+
+day_iso: !Timestamp
+  time: 2018-06-23
+
+day_condensed: !Timestamp
+  time: 2018-06-23
+  format: "%y%m%d"
+
+time_iso: !Timestamp
+  time: 2018-06-23 23:23:23
+
+time_condensed: !Timestamp
+  time: 2018-06-23 23:23:23
+  format: "%y%m%d%H%M%S"
+```

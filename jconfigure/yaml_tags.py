@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import datetime
 import itertools
 import json
 import os
@@ -266,3 +267,25 @@ class IncludeText(RelativeFileIncludingYamlTag):
     @classmethod
     def handle_included_file(cls, context, file_handle):
         return file_handle.read().strip()
+
+
+class Timestamp(ArgListAcceptingYamlTag):
+    yaml_tag = "!Timestamp"
+    supported_node_types = SequenceNode, MappingNode
+
+    @classmethod
+    def map_node_data(cls, context, time=None, format=None):
+        if time is not None and not isinstance(time, datetime.datetime) and not isinstance(time, datetime.date):
+            cls.handle_tag_construction_error(
+                message="'time' argument to !Timestamp tag must be a date or datetime!",
+                filename=context["_parsing_filename"],
+            )
+
+        if format is not None and not isinstance(format, str):
+            cls.handle_tag_construction_error(
+                message="'format' argument to !Timestamp tag must be a string!",
+                filename=context["_parsing_filename"],
+            )
+
+        time = time or datetime.datetime.utcnow()
+        return time.strftime(format) if format is not None else time.isoformat()

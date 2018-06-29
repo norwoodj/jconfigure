@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+import datetime
 import json
 import unittest
 import yaml
 
+from dateutil.parser import parse
 from unittest.mock import patch
 from ..utils import get_parser_for_file
 from ..exceptions import TagConstructionException, UnsupportedNodeTypeException
@@ -260,3 +262,53 @@ class TestIncludeYaml(unittest.TestCase):
         actual = TestIncludeYaml.parse_file(get_full_test_file_path("yaml_and_json_string.yaml"))
         self.assertEqual(json.loads(actual["string_json"]), {"pets": {"oscar": "dog", "echo": "cat"}})
         self.assertEqual(yaml.load(actual["string_yaml"]), {"pets": {"oscar": "dog", "echo": "cat"}})
+
+    def test_timestamp_successful(self):
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("test_timestamp_successful.yaml"))
+        self.assertIn("now", actual)
+
+        now_parsed = parse(actual["now"])
+        self.assertGreater(now_parsed, datetime.datetime.utcnow() - datetime.timedelta(seconds=30))
+        self.assertLess(now_parsed, datetime.datetime.utcnow())
+
+        del actual["now"]
+        self.assertEqual(actual, {
+            "day_sequence_iso": "2018-06-23",
+            "day_mapping_iso": "2018-06-23",
+            "day_sequence_format": "180623",
+            "day_mapping_format": "180623",
+            "time_sequence_iso": "2018-06-23T23:23:23",
+            "time_mapping_iso": "2018-06-23T23:23:23",
+            "time_sequence_format": "180623232323",
+            "time_mapping_format": "180623232323"
+        })
+
+    def test_timestamp_fails_non_string_format(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("test_timestamp_fails_non_string_format.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("test_timestamp_fails_non_string_format.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "'format' argument to !Timestamp tag must be a string!",
+            )
+
+    def test_timestamp_fails_non_datetime_time(self):
+        self.assertRaises(
+            TagConstructionException,
+            TestIncludeYaml.parse_file,
+            get_full_test_file_path("test_timestamp_fails_non_datetime_time.yaml"),
+        )
+
+        try:
+            TestIncludeYaml.parse_file(get_full_test_file_path("test_timestamp_fails_non_datetime_time.yaml"))
+        except TagConstructionException as e:
+            self.assertEqual(
+                e.reason,
+                "'time' argument to !Timestamp tag must be a date or datetime!",
+            )

@@ -1,0 +1,30 @@
+day_sequence_iso: !Timestamp
+  - 2018-06-23
+
+day_mapping_iso: !Timestamp
+  time: 2018-06-23
+
+day_sequence_format: !Timestamp
+  - 2018-06-23
+  - "%y%m%d"
+
+day_mapping_format: !Timestamp
+  time: 2018-06-23
+  format: "%y%m%d"
+
+time_sequence_iso: !Timestamp
+  - 2018-06-23 23:23:23
+
+time_mapping_iso: !Timestamp
+  time: 2018-06-23 23:23:23
+
+time_sequence_format: !Timestamp
+  - 2018-06-23 23:23:23
+  - "%y%m%d%H%M%S"
+
+time_mapping_format: !Timestamp
+  time: 2018-06-23 23:23:23
+  format: "%y%m%d%H%M%S"
+
+now: !Timestamp
+  format:

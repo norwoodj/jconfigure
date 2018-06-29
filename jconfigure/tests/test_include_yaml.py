@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+import json
 import unittest
-from unittest.mock import patch
+import yaml
 
+from unittest.mock import patch
 from ..utils import get_parser_for_file
 from ..exceptions import TagConstructionException, UnsupportedNodeTypeException
-
 from .test_utils import get_full_test_file_path
 
 
@@ -254,3 +255,8 @@ class TestIncludeYaml(unittest.TestCase):
                 e.reason,
                 "'format_args' keyword argument must be a dictionary or a list!",
             )
+
+    def test_yaml_and_json_string(self):
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("yaml_and_json_string.yaml"))
+        self.assertEqual(json.loads(actual["string_json"]), {"pets": {"oscar": "dog", "echo": "cat"}})
+        self.assertEqual(yaml.load(actual["string_yaml"]), {"pets": {"oscar": "dog", "echo": "cat"}})

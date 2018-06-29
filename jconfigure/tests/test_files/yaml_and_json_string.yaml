@@ -1,0 +1,11 @@
+string_yaml: !YamlString
+  object:
+    pets:
+      echo: cat
+      oscar: dog
+
+string_json: !JsonString
+  object:
+    pets:
+      echo: cat
+      oscar: dog

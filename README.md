@@ -258,8 +258,7 @@ is used.
 
 Usage:
 ```
-utc_now_iso: !Timestamp
-  format:
+utc_now_iso: !Timestamp {}
 
 utc_now_condensed: !Timestamp
   format: "%y%m%d%H%M%S"

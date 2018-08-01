@@ -277,3 +277,27 @@ time_condensed: !Timestamp
   time: 2018-06-23 23:23:23
   format: "%y%m%d%H%M%S"
 ```
+
+### !OffsetTimestamp
+This tag is the same as above, but takes an optional "delta" key that should be a dictionary that
+can be passed as kwargs to the `datetime.timedelta` constructor. This diff will be added to the
+time or date provided before the timestamp is produced.
+
+Usage:
+```
+year_later_day_iso: !OffsetTimestamp
+  time: 2018-06-23
+  delta:
+    years: 1
+    seconds: 23
+
+week_ago_date: !Timestamp
+  time: 2018-06-23
+  format: "%y%m%d"
+  delta:
+    days: -7
+
+week_ago_iso: !Timestamp
+  delta:
+    days: -7
+```

@@ -287,9 +287,9 @@ class OffsetTimestamp(ArgListAcceptingYamlTag):
                 filename=context["_parsing_filename"],
             )
 
-        if delta is not None and not isinstance(format, dict):
+        if delta is not None and not isinstance(delta, dict):
             cls.handle_tag_construction_error(
-                message=f"'format' argument to {cls.yaml_tag} tag must be a dict that can be used to construct a datetime.timedelta instance!",
+                message=f"'delta' argument to {cls.yaml_tag} tag must be a dict that can be used to construct a datetime.timedelta instance!",
                 filename=context["_parsing_filename"],
             )
 

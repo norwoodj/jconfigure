@@ -43,7 +43,7 @@ there are three phases to the configuration process:
 * Configure From Active Profile files
 
 Each of these steps is exactly the same process, but in each case, the parser is looking for different files.
-What happens in each case is that jconfigure uses the `JCONFIGURE_CONFIG_DIRS` environment variable, which
+What happens in each case is that jconfigure uses the `JCONFIGURE_CONFIG_DIRECTORIES` environment variable, which
 should be a comma seperated list of directory names to search for config files. If nothing is set, it
 defaults to using a single directory, `$(pwd)/config`. It then looks for config files that match the filenames
 being searched for in each directory, and merges all of those files, with the config loaded from files in later
@@ -63,7 +63,7 @@ Let's say that I have the following directory structure and environment variable
 ```
 $ env | grep -e "^JCONFIGURE_"
 JCONFIGURE_ACTIVE_PROFILES=prod,overrides
-JCONFIGURE_CONFIG_DIRS=/var/lib/app/config,/var/lib/extra/config
+JCONFIGURE_CONFIG_DIRECTORIES=/var/lib/app/config,/var/lib/extra/config
 
 $ ls -R /var/lib/app/config
 logging.yaml
@@ -258,8 +258,7 @@ is used.
 
 Usage:
 ```
-utc_now_iso: !Timestamp
-  format:
+utc_now_iso: !Timestamp {}
 
 utc_now_condensed: !Timestamp
   format: "%y%m%d%H%M%S"
@@ -277,4 +276,28 @@ time_iso: !Timestamp
 time_condensed: !Timestamp
   time: 2018-06-23 23:23:23
   format: "%y%m%d%H%M%S"
+```
+
+### !OffsetTimestamp
+This tag is the same as above, but takes an optional "delta" key that should be a dictionary that
+can be passed as kwargs to the `datetime.timedelta` constructor. This diff will be added to the
+time or date provided before the timestamp is produced.
+
+Usage:
+```
+year_later_day_iso: !OffsetTimestamp
+  time: 2018-06-23
+  delta:
+    years: 1
+    seconds: 23
+
+week_ago_date: !Timestamp
+  time: 2018-06-23
+  format: "%y%m%d"
+  delta:
+    days: -7
+
+week_ago_iso: !Timestamp
+  delta:
+    days: -7
 ```

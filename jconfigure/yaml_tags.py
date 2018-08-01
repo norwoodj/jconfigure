@@ -269,23 +269,44 @@ class IncludeText(RelativeFileIncludingYamlTag):
         return file_handle.read().strip()
 
 
-class Timestamp(ArgListAcceptingYamlTag):
-    yaml_tag = "!Timestamp"
+class OffsetTimestamp(ArgListAcceptingYamlTag):
+    yaml_tag = "!OffsetTimestamp"
     supported_node_types = SequenceNode, MappingNode
 
     @classmethod
-    def map_node_data(cls, context, time=None, format=None):
+    def map_node_data(cls, context, time=None, format=None, delta=None):
         if time is not None and not isinstance(time, datetime.datetime) and not isinstance(time, datetime.date):
             cls.handle_tag_construction_error(
-                message="'time' argument to !Timestamp tag must be a date or datetime!",
+                message=f"'time' argument to {cls.yaml_tag} tag must be a date or datetime!",
                 filename=context["_parsing_filename"],
             )
 
         if format is not None and not isinstance(format, str):
             cls.handle_tag_construction_error(
-                message="'format' argument to !Timestamp tag must be a string!",
+                message=f"'format' argument to {cls.yaml_tag} tag must be a string!",
+                filename=context["_parsing_filename"],
+            )
+
+        if delta is not None and not isinstance(format, dict):
+            cls.handle_tag_construction_error(
+                message=f"'format' argument to {cls.yaml_tag} tag must be a dict that can be used to construct a datetime.timedelta instance!",
                 filename=context["_parsing_filename"],
             )
 
         time = time or datetime.datetime.utcnow()
-        return time.strftime(format) if format is not None else time.isoformat()
+        time_delta = datetime.timedelta(**delta) if delta is not None else datetime.timedelta()
+        replace_args = {"microsecond": 0} if type(time) is datetime.datetime else {}
+        time_with_delta = (time + time_delta).replace(**replace_args)
+        return time_with_delta.strftime(format) if format is not None else time_with_delta.isoformat()
+
+
+class Timestamp(OffsetTimestamp):
+    yaml_tag = "!Timestamp"
+
+    @classmethod
+    def map_node_data(cls, context, time=None, format=None):
+        return super(Timestamp, cls).map_node_data(
+            context=context,
+            time=time,
+            format=format,
+        )

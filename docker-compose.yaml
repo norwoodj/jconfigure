@@ -3,3 +3,5 @@ version: "3.4"
 services:
   tests:
     image: jconfigure-tests:current
+    build:
+      context: .

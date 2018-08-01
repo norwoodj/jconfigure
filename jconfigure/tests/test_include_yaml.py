@@ -312,3 +312,12 @@ class TestIncludeYaml(unittest.TestCase):
                 e.reason,
                 "'time' argument to !Timestamp tag must be a date or datetime!",
             )
+
+    def test_offset_timestamp_successful(self):
+        actual = TestIncludeYaml.parse_file(get_full_test_file_path("test_offset_timestamp_successful.yaml"))
+        self.assertEqual(actual, {
+            "week_ago_sequence_condensed": "180616",
+            "week_ago_mapping_condensed": "180616",
+            "week_ago_time_sequence_condensed": "180616232323",
+            "week_ago_time_mapping_condensed": "180616232323",
+        })

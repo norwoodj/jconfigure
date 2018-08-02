@@ -4,12 +4,12 @@ from distutils.core import setup
 setup(
     name="jconfigure",
     packages=["jconfigure"],
-    version="18.0802",
+    version="18.0803-dev",
     description="A python configuration management library",
     author="John Norwood",
     author_email="norwood.john.m@gmail.com",
     url="https://github.com/norwoodj/jconfigure",
-    download_url="https://github.com/norwoodj/jconfigure/archive/18.0802.tar.gz",
+    download_url="https://github.com/norwoodj/jconfigure/archive/18.0803-dev.tar.gz",
     keywords=["configuration"],
     classifiers=[],
     install_requires=[

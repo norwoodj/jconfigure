@@ -1,19 +1,19 @@
-week_ago_sequence_condensed: !OffsetTimestamp
+week_ago_sequence_condensed: !Timestamp
   - 2018-06-23
   - "%y%m%d"
   - {days: -7}
 
-week_ago_mapping_condensed: !OffsetTimestamp
+week_ago_mapping_condensed: !Timestamp
   time: 2018-06-23
   format: "%y%m%d"
   delta: {days: -7}
 
-week_ago_time_sequence_condensed: !OffsetTimestamp
+week_ago_time_sequence_condensed: !Timestamp
   - 2018-06-23 23:23:23
   - "%y%m%d%H%M%S"
   - {days: -7}
 
-week_ago_time_mapping_condensed: !OffsetTimestamp
+week_ago_time_mapping_condensed: !Timestamp
   time: 2018-06-23 23:23:23
   format: "%y%m%d%H%M%S"
   delta: {days: -7}

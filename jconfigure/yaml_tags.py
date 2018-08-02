@@ -269,8 +269,8 @@ class IncludeText(RelativeFileIncludingYamlTag):
         return file_handle.read().strip()
 
 
-class OffsetTimestamp(ArgListAcceptingYamlTag):
-    yaml_tag = "!OffsetTimestamp"
+class Timestamp(ArgListAcceptingYamlTag):
+    yaml_tag = "!Timestamp"
     supported_node_types = SequenceNode, MappingNode
 
     @classmethod
@@ -298,15 +298,3 @@ class OffsetTimestamp(ArgListAcceptingYamlTag):
         replace_args = {"microsecond": 0} if type(time) is datetime.datetime else {}
         time_with_delta = (time + time_delta).replace(**replace_args)
         return time_with_delta.strftime(format) if format is not None else time_with_delta.isoformat()
-
-
-class Timestamp(OffsetTimestamp):
-    yaml_tag = "!Timestamp"
-
-    @classmethod
-    def map_node_data(cls, context, time=None, format=None):
-        return super(Timestamp, cls).map_node_data(
-            context=context,
-            time=time,
-            format=format,
-        )

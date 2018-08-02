@@ -145,7 +145,7 @@ env_var_default: !EnvVar
 ```
 
 ### !StringFormat
-This command takes a list or mapping specifying a format string and arguments for formatting and
+This tag takes a list or mapping specifying a format string and arguments for formatting and
 returns the formatted string:
 
 Usage:
@@ -218,7 +218,7 @@ include_yaml_mapping:
 ```
 
 ### !JoinFilePaths
-This command takes a list or a mapping with a key "paths" that is a list, and simply
+This tag takes a list or a mapping with a key "paths" that is a list, and simply
 joins all of those file paths together, returning the string path. The rules of how
 this joining works are the same as python's `os.path.join`.
 
@@ -237,7 +237,7 @@ join_file_paths_mapping: !IncludeYaml
 ```
 
 ### !Chain
-This command takes a list of lists and chains them together into a single list
+This tag takes a list of lists and chains them together into a single list
 
 Usage:
 ```
@@ -252,9 +252,11 @@ chain_mapping: !Chain
 ```
 
 ### !Timestamp
-This command takes an optional date/datetime and format and produces a timestamp in the format.
+This tag takes an optional date/datetime and format and produces a timestamp in the format.
 If the format is not supplied, ISO format is used, and if the timestamp is not provided, utcnow
-is used.
+is used. The tag also takes an optional "delta" key that should be a dictionary that
+can be passed as kwargs to the `datetime.timedelta` constructor. This diff will be added to the
+time or date provided before the timestamp is produced.
 
 Usage:
 ```
@@ -276,16 +278,8 @@ time_iso: !Timestamp
 time_condensed: !Timestamp
   time: 2018-06-23 23:23:23
   format: "%y%m%d%H%M%S"
-```
 
-### !OffsetTimestamp
-This tag is the same as above, but takes an optional "delta" key that should be a dictionary that
-can be passed as kwargs to the `datetime.timedelta` constructor. This diff will be added to the
-time or date provided before the timestamp is produced.
-
-Usage:
-```
-year_later_day_iso: !OffsetTimestamp
+year_later_day_iso: !Timestamp
   time: 2018-06-23
   delta:
     years: 1

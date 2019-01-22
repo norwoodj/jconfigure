@@ -19,7 +19,7 @@ def _get_configuration_dirs(configuration_dirs_arg):
             else [os.path.join(os.getcwd(), "config")]
         )
 
-    elif type(configuration_dirs_arg) is basestring:
+    elif type(configuration_dirs_arg) is str:
         return [configuration_dirs_arg]
 
     return configuration_dirs_arg

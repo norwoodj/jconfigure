@@ -13,6 +13,6 @@ setup(
     keywords=["configuration"],
     classifiers=[],
     install_requires=[
-        "PyYAML==3.12",
+        "PyYAML==5.1",
     ]
 )

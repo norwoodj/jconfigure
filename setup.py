@@ -4,7 +4,7 @@ from distutils.core import setup
 setup(
     name="jconfigure",
     packages=["jconfigure"],
-    version="19.0123-dev",
+    version="_VERSION",
     description="A python configuration management library",
     author="John Norwood",
     author_email="norwood.john.m@gmail.com",
